@@ -14,14 +14,14 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "ovsx")
 public class OVSXConfig {
 
-    private AuthConfig authConfig = new AuthConfig();
+    private AuthConfig auth = new AuthConfig();
 
-    public AuthConfig getAuthConfig() {
-        return authConfig;
+    public AuthConfig getAuth() {
+        return auth;
     }
 
-    public void setAuthConfig(AuthConfig authConfig) {
-        this.authConfig = authConfig;
+    public void setAuth(AuthConfig authConfig) {
+        this.auth = authConfig;
     }
 
     public static class AuthConfig {

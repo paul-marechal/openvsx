@@ -46,7 +46,7 @@ public class AuthUserFactory {
      * @return The relevant attribute mappings.
      */
     private AttributeNames getAttributeNames(String provider) {
-        var attributeNames = config.getAuthConfig().getAttributeNames().get(provider);
+        var attributeNames = config.getAuth().getAttributeNames().get(provider);
         if (attributeNames == null) {
             return switch (provider) {
                 case "github" -> GITHUB_ATTRIBUTES;
