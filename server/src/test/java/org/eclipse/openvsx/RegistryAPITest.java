@@ -2529,8 +2529,15 @@ class RegistryAPITest {
         }
 
         @Bean
-        AuthUserFactory authUserFactory() {
-            return new AuthUserFactory();
+        AuthUserFactory authUserFactory(
+            OVSXConfig config
+        ) {
+            return new AuthUserFactory(config);
+        }
+
+        @Bean
+        OVSXConfig ovsxConfig() {
+            return new OVSXConfig();
         }
     }
 }

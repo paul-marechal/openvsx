@@ -33,6 +33,7 @@ import org.eclipse.openvsx.ExtensionService;
 import org.eclipse.openvsx.ExtensionValidator;
 import org.eclipse.openvsx.LocalRegistryService;
 import org.eclipse.openvsx.MockTransactionTemplate;
+import org.eclipse.openvsx.OVSXConfig;
 import org.eclipse.openvsx.UpstreamRegistryService;
 import org.eclipse.openvsx.UserService;
 import org.eclipse.openvsx.adapter.VSCodeIdService;
@@ -1355,8 +1356,15 @@ class AdminAPITest {
         }
 
         @Bean
-        AuthUserFactory authUserFactory() {
-            return new AuthUserFactory();
+        AuthUserFactory authUserFactory(
+                OVSXConfig config
+        ) {
+            return new AuthUserFactory(config);
+        }
+
+        @Bean
+        OVSXConfig ovsxConfig() {
+                return new OVSXConfig();
         }
     }
 }

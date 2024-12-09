@@ -11,6 +11,8 @@ package org.eclipse.openvsx.web;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.persistence.EntityManager;
+
+import org.eclipse.openvsx.OVSXConfig;
 import org.eclipse.openvsx.UserService;
 import org.eclipse.openvsx.eclipse.EclipseService;
 import org.eclipse.openvsx.repositories.RepositoryService;
@@ -88,8 +90,15 @@ class SitemapControllerTest {
         }
 
         @Bean
-        AuthUserFactory authUserFactory() {
-            return new AuthUserFactory();
+        AuthUserFactory authUserFactory(
+            OVSXConfig config
+        ) {
+            return new AuthUserFactory(config);
+        }
+
+        @Bean
+        OVSXConfig ovsxConfig() {
+            return new OVSXConfig();
         }
     }
 }

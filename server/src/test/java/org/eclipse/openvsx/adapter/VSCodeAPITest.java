@@ -16,6 +16,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.persistence.EntityManager;
 import org.eclipse.openvsx.ExtensionValidator;
 import org.eclipse.openvsx.MockTransactionTemplate;
+import org.eclipse.openvsx.OVSXConfig;
 import org.eclipse.openvsx.UserService;
 import org.eclipse.openvsx.cache.CacheService;
 import org.eclipse.openvsx.cache.FilesCacheKeyGenerator;
@@ -970,8 +971,15 @@ class VSCodeAPITest {
         }
 
         @Bean
-        AuthUserFactory authUserFactory() {
-            return new AuthUserFactory();
+        AuthUserFactory authUserFactory(
+            OVSXConfig config
+        ) {
+            return new AuthUserFactory(config);
+        }
+
+        @Bean
+        OVSXConfig ovsxConfig() {
+            return new OVSXConfig();
         }
     }
 }
