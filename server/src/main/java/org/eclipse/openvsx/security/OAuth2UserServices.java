@@ -12,7 +12,7 @@ package org.eclipse.openvsx.security;
 import static java.util.Collections.emptyList;
 import static org.eclipse.openvsx.security.CodedAuthException.ECLIPSE_MISMATCH_GITHUB_ID;
 import static org.eclipse.openvsx.security.CodedAuthException.ECLIPSE_MISSING_GITHUB_ID;
-import static org.eclipse.openvsx.security.CodedAuthException.INVALID_GITHUB_USER;
+import static org.eclipse.openvsx.security.CodedAuthException.INVALID_USER;
 import static org.eclipse.openvsx.security.CodedAuthException.NEED_MAIN_LOGIN;
 import static org.eclipse.openvsx.security.CodedAuthException.UNSUPPORTED_REGISTRATION;
 import static org.springframework.security.core.authority.AuthorityUtils.createAuthorityList;
@@ -88,19 +88,24 @@ public class OAuth2UserServices {
 
     public IdPrincipal loadUser(OAuth2UserRequest userRequest) {
         var registrationId = userRequest.getClientRegistration().getRegistrationId();
-        return switch (registrationId) {
-            case "github" -> loadGitHubUser(userRequest);
-            case "eclipse" -> loadEclipseUser(userRequest);
-            default -> throw new CodedAuthException("Unsupported registration: " + registrationId, UNSUPPORTED_REGISTRATION);
-        };
+        if (registrationId == "eclipse") {
+            return loadEclipseUser(userRequest);
+        } else try {
+            return loadGenericUser(userRequest);
+        } catch (Throwable t) {
+            throw new CodedAuthException("Unsupported registration: " + registrationId, UNSUPPORTED_REGISTRATION, t);
+        }
     }
 
-    private IdPrincipal loadGitHubUser(OAuth2UserRequest userRequest) {
-        var authUser = authUserFactory.createAuthUser("github", delegate.loadUser(userRequest));
-        String loginName = authUser.getLoginName();
-        if (StringUtils.isEmpty(loginName))
-            throw new CodedAuthException("Invalid login: missing 'login' field.", INVALID_GITHUB_USER);
-        var userData = repositories.findUserByLoginName(authUser.getProviderId(), loginName);
+    private IdPrincipal loadGenericUser(OAuth2UserRequest userRequest) {
+        var authUser = authUserFactory.createAuthUser(
+            userRequest.getClientRegistration().getRegistrationId(),
+            delegate.loadUser(userRequest)
+        );
+        if (StringUtils.isEmpty(authUser.getLoginName())) {
+            throw new CodedAuthException("Invalid login: missing 'login' field.", INVALID_USER);
+        }
+        var userData = repositories.findUserByLoginName(authUser.getProviderId(), authUser.getLoginName());
         if (userData == null) {
             userData = users.registerNewUser(authUser);
         } else {

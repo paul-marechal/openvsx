@@ -1,5 +1,7 @@
 package org.eclipse.openvsx.security;
 
+import java.util.NoSuchElementException;
+
 import org.eclipse.openvsx.OVSXConfig;
 import org.eclipse.openvsx.OVSXConfig.AuthConfig.AttributeNames;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -7,6 +9,16 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthUserFactory {
+
+    private static final AttributeNames GITHUB_ATTRIBUTES = new AttributeNames();
+
+    static {
+        GITHUB_ATTRIBUTES.setAvatarUrl("avatar_url");
+        GITHUB_ATTRIBUTES.setEmail("email");
+        GITHUB_ATTRIBUTES.setFullName("name");
+        GITHUB_ATTRIBUTES.setLoginName("login");
+        GITHUB_ATTRIBUTES.setProviderUrl("html_url");
+    }
 
     private final OVSXConfig config;
 
@@ -29,7 +41,18 @@ public class AuthUserFactory {
         );
     }
 
+    /**
+     * @param provider The provider to get the attribute mappings for.
+     * @return The relevant attribute mappings.
+     */
     private AttributeNames getAttributeNames(String provider) {
-        return config.getAuthConfig().getAttributeNames().getOrDefault(provider, AttributeNames.EMPTY);
+        var attributeNames = config.getAuthConfig().getAttributeNames().get(provider);
+        if (attributeNames == null) {
+            return switch (provider) {
+                case "github" -> GITHUB_ATTRIBUTES;
+                default -> throw new NoSuchElementException("No attributes found for provider: " + provider);
+            };
+        }
+        return attributeNames;
     }
 }

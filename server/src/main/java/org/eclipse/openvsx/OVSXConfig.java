@@ -50,11 +50,11 @@ public class OVSXConfig {
 
             public static final AttributeNames EMPTY = new AttributeNames();
 
-            private String avatarUrl = "avatar_url";
-            private String email = "email";
-            private String fullName = "name";
-            private String loginName = "login";
-            private String providerUrl = "html_url";
+            private String avatarUrl;
+            private String email;
+            private String fullName;
+            private String loginName;
+            private String providerUrl;
 
             public String getAvatarUrl() {
                 return avatarUrl;
