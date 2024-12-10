@@ -26,6 +26,8 @@ public class OVSXConfig {
 
     public static class AuthConfig {
 
+        private String provider = "github";
+
         /**
          * Configuration example:
          * <pre><code>
@@ -37,6 +39,14 @@ public class OVSXConfig {
          * </code></pre>
          */
         private Map<String, AttributeNames> attributeNames = emptyMap();
+
+        public String getProvider() {
+            return provider;
+        }
+
+        public void setProvider(String provider) {
+            this.provider = provider;
+        }
 
         public Map<String, AttributeNames> getAttributeNames() {
             return attributeNames;
