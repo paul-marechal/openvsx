@@ -10,6 +10,9 @@
 package org.eclipse.openvsx.security;
 
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNullElse;
+import static org.eclipse.openvsx.entities.UserData.ROLE_ADMIN;
+import static org.eclipse.openvsx.entities.UserData.ROLE_PRIVILEGED;
 import static org.eclipse.openvsx.security.CodedAuthException.ECLIPSE_MISMATCH_GITHUB_ID;
 import static org.eclipse.openvsx.security.CodedAuthException.ECLIPSE_MISSING_GITHUB_ID;
 import static org.eclipse.openvsx.security.CodedAuthException.INVALID_USER;
@@ -18,6 +21,7 @@ import static org.eclipse.openvsx.security.CodedAuthException.UNSUPPORTED_REGIST
 import static org.springframework.security.core.authority.AuthorityUtils.createAuthorityList;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.openvsx.UserService;
@@ -32,6 +36,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2LoginAuthenticationToken;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -44,13 +49,15 @@ import jakarta.persistence.EntityManager;
 @Service
 public class OAuth2UserServices {
 
+    private static final DefaultOAuth2UserService springOAuth2UserService = new DefaultOAuth2UserService();
+    private static final OidcUserService springOidcUserService = new OidcUserService();
+
     private final UserService users;
     private final TokenService tokens;
     private final RepositoryService repositories;
     private final EntityManager entityManager;
     private final EclipseService eclipse;
     private final AuthUserFactory authUserFactory;
-    private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
 
     public OAuth2UserServices(
             UserService users,
@@ -92,16 +99,20 @@ public class OAuth2UserServices {
             return loadEclipseUser(userRequest);
         } else try {
             return loadGenericUser(userRequest);
-        } catch (Throwable t) {
-            throw new CodedAuthException("Unsupported registration: " + registrationId, UNSUPPORTED_REGISTRATION, t);
+        } catch (NoSuchElementException e) {
+            throw new CodedAuthException("Unsupported registration: " + registrationId, UNSUPPORTED_REGISTRATION, e);
         }
     }
 
+    private OAuth2User springLoadUser(OAuth2UserRequest userRequest) {
+        return userRequest instanceof OidcUserRequest oidcRequest
+            ? springOidcUserService.loadUser(oidcRequest)
+            : springOAuth2UserService.loadUser(userRequest);
+    }
+
     private IdPrincipal loadGenericUser(OAuth2UserRequest userRequest) {
-        var authUser = authUserFactory.createAuthUser(
-            userRequest.getClientRegistration().getRegistrationId(),
-            delegate.loadUser(userRequest)
-        );
+        var registrationId = userRequest.getClientRegistration().getRegistrationId();
+        var authUser = authUserFactory.createAuthUser(registrationId, springLoadUser(userRequest));
         if (StringUtils.isEmpty(authUser.getLoginName())) {
             throw new CodedAuthException("Invalid login: missing 'login' field.", INVALID_USER);
         }
@@ -146,9 +157,9 @@ public class OAuth2UserServices {
     }
 
     private Collection<GrantedAuthority> getAuthorities(UserData userData) {
-        return switch (userData.getRole()) {
-            case UserData.ROLE_ADMIN -> createAuthorityList("ROLE_ADMIN");
-            case UserData.ROLE_PRIVILEGED -> createAuthorityList("ROLE_PRIVILEGED");
+        return switch (requireNonNullElse(userData.getRole(), "")) {
+            case ROLE_ADMIN -> createAuthorityList("ROLE_ADMIN");
+            case ROLE_PRIVILEGED -> createAuthorityList("ROLE_PRIVILEGED");
             default -> emptyList();
         };
     }
