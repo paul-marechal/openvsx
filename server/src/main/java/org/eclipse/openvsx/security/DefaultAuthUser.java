@@ -11,13 +11,13 @@ package org.eclipse.openvsx.security;
 
 public class DefaultAuthUser implements AuthUser {
 
-    final String authId;
-    final String avatarUrl;
-    final String email;
-    final String fullName;
-    final String loginName;
-    final String providerId;
-    final String providerUrl;
+    protected final String authId;
+    protected final String avatarUrl;
+    protected final String email;
+    protected final String fullName;
+    protected final String loginName;
+    protected final String providerId;
+    protected final String providerUrl;
 
     public DefaultAuthUser(
         final String authId,

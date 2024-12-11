@@ -58,8 +58,6 @@ public class OVSXConfig {
 
         public static class AttributeNames {
 
-            public static final AttributeNames EMPTY = new AttributeNames();
-
             private String avatarUrl;
             private String email;
             private String fullName;

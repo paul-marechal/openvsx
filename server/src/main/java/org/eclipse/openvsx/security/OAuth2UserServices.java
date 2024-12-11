@@ -21,13 +21,13 @@ import static org.eclipse.openvsx.security.CodedAuthException.UNSUPPORTED_REGIST
 import static org.springframework.security.core.authority.AuthorityUtils.createAuthorityList;
 
 import java.util.Collection;
-import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.openvsx.UserService;
 import org.eclipse.openvsx.eclipse.EclipseService;
 import org.eclipse.openvsx.entities.UserData;
 import org.eclipse.openvsx.repositories.RepositoryService;
+import org.eclipse.openvsx.security.AuthUserFactory.MissingProvider;
 import org.eclipse.openvsx.util.ErrorResultException;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -94,14 +94,10 @@ public class OAuth2UserServices {
     }
 
     public IdPrincipal loadUser(OAuth2UserRequest userRequest) {
-        var registrationId = userRequest.getClientRegistration().getRegistrationId();
-        if (registrationId == "eclipse") {
-            return loadEclipseUser(userRequest);
-        } else try {
-            return loadGenericUser(userRequest);
-        } catch (NoSuchElementException e) {
-            throw new CodedAuthException("Unsupported registration: " + registrationId, UNSUPPORTED_REGISTRATION, e);
-        }
+        return switch (userRequest.getClientRegistration().getRegistrationId()) {
+            case "eclipse" -> loadEclipseUser(userRequest);
+            default -> loadGenericUser(userRequest);
+        };
     }
 
     private OAuth2User springLoadUser(OAuth2UserRequest userRequest) {
@@ -110,9 +106,16 @@ public class OAuth2UserServices {
             : springOAuth2UserService.loadUser(userRequest);
     }
 
+    private AuthUser loadAuthUser(OAuth2UserRequest userRequest) {
+        try {
+            return authUserFactory.createAuthUser(userRequest.getClientRegistration().getRegistrationId(), springLoadUser(userRequest));
+        } catch (MissingProvider e) {
+            throw new CodedAuthException(e.getMessage(), UNSUPPORTED_REGISTRATION);
+        }
+    }
+
     private IdPrincipal loadGenericUser(OAuth2UserRequest userRequest) {
-        var registrationId = userRequest.getClientRegistration().getRegistrationId();
-        var authUser = authUserFactory.createAuthUser(registrationId, springLoadUser(userRequest));
+        var authUser = loadAuthUser(userRequest);
         if (StringUtils.isEmpty(authUser.getLoginName())) {
             throw new CodedAuthException("Invalid login: missing 'login' field.", INVALID_USER);
         }
