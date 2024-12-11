@@ -38,7 +38,9 @@ import org.eclipse.openvsx.entities.UserData;
 import org.eclipse.openvsx.json.ExtensionJson;
 import org.eclipse.openvsx.json.ReviewJson;
 import org.eclipse.openvsx.repositories.RepositoryService;
+import org.eclipse.openvsx.security.AuthUser;
 import org.eclipse.openvsx.security.AuthUserFactory;
+import org.eclipse.openvsx.security.AuthUserFactory.MissingProvider;
 import org.eclipse.openvsx.security.IdPrincipal;
 import org.eclipse.openvsx.util.TempFile;
 import org.eclipse.openvsx.util.TimeUtil;
@@ -132,7 +134,11 @@ class CacheServiceTest {
 
             var user = extVersion.getPublishedWith().getUser();
             var oauthUser = new DefaultOAuth2User(authorities, attributes, "name");
-            var authUser = authUserFactory.createAuthUser(authority, oauthUser);
+            AuthUser authUser; try {
+                authUser = authUserFactory.createAuthUser(authority, oauthUser);
+            } catch (MissingProvider e) {
+                authUser = null;
+            }
             users.updateExistingUser(user, authUser);
             assertNull(cache.getCache(CACHE_EXTENSION_JSON).get(cacheKey, ExtensionJson.class));
 
