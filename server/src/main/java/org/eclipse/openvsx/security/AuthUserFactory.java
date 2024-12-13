@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.openvsx.OVSXConfig;
-import org.eclipse.openvsx.OVSXConfig.AuthConfig.AttributeNames;
+import org.eclipse.openvsx.OVSXConfig.OAuth2Config.AttributeNames;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +61,7 @@ public class AuthUserFactory {
      * @return The relevant attribute mappings.
      */
     protected AttributeNames getAttributeNames(String provider) throws MissingProvider {
-        var attributeNames = config.getAuth().getAttributeNames().get(provider);
+        var attributeNames = config.getOauth2().getAttributeNames().get(provider);
         if (attributeNames == null) attributeNames = DEFAULTS.get(provider);
         if (attributeNames == null) throw new MissingProvider(provider);
         return attributeNames;

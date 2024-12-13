@@ -14,28 +14,35 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "ovsx")
 public class OVSXConfig {
 
-    private AuthConfig auth = new AuthConfig();
+    private OAuth2Config oauth2 = new OAuth2Config();
 
-    public AuthConfig getAuth() {
-        return auth;
+    public OAuth2Config getOauth2() {
+        return oauth2;
     }
 
-    public void setAuth(AuthConfig authConfig) {
-        this.auth = authConfig;
+    public void setOauth2(OAuth2Config oauth2Config) {
+        this.oauth2 = oauth2Config;
     }
 
-    public static class AuthConfig {
+    public static class OAuth2Config {
 
+        /**
+         * The user authentication provider to use.
+         */
         private String provider = "github";
 
         /**
          * Configuration example:
          * <pre><code>
-         * ovsx:
-         *   auth:
-         *     attribute-names:
-         *       github: # provider name
-         *         login: field-returned-by-your-provider
+         *ovsx:
+         *  oauth2:
+         *    attribute-names:
+         *      [provider-name]:
+         *        avatar-url: string
+         *        email: string
+         *        full-name: string
+         *        login-name: string
+         *        provider-url: string
          * </code></pre>
          */
         private Map<String, AttributeNames> attributeNames = emptyMap();
