@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "rootDir": "src",
+        "outDir": "lib",
         "target": "es2020",
         "module": "commonjs",
         "sourceMap": true,
@@ -10,7 +12,7 @@
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "strictNullChecks": true,
-        "outDir": "lib"
+        "resolveJsonModule": true
     },
     "include": [
         "src"

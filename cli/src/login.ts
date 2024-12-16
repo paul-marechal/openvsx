@@ -7,7 +7,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import {  } from '@vscode/vsce';
+
 import { addEnvOptions, getUserInput, requestPAT } from './util';
 import { openDefaultStore } from './store';
 import { RegistryOptions } from './registry';

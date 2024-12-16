@@ -13,5 +13,6 @@ export * from './get';
 export * from './publish';
 export * from './registry';
 export * from './verify-pat';
+export * from './version';
 export { isLicenseOk } from './check-license';
 export { validateManifest, readManifest } from './util';

@@ -17,7 +17,7 @@ import { handleError } from './util';
 import { getExtension } from './get';
 import login from './login';
 import logout from './logout';
-import { LIB_VERSION } from './version';
+import { version } from './version';
 
 module.exports = function (argv: string[]): void {
     const program = new commander.Command();
@@ -25,7 +25,7 @@ module.exports = function (argv: string[]): void {
         .option('-r, --registryUrl <url>', 'Use the registry API at this base URL.')
         .option('-p, --pat <token>', 'Personal access token.')
         .option('--debug', 'Include debug information on error')
-        .version(LIB_VERSION, '-V, --version', 'Print the Eclipse Open VSX CLI version');
+        .version(version, '-V, --version', 'Print the Eclipse Open VSX CLI version');
 
     const createNamespaceCmd = program.command('create-namespace <name>');
     createNamespaceCmd.description('Create a new namespace')
